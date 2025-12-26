@@ -1,6 +1,7 @@
 name: "Slack Deployment Notification"
 description: "Send eye-catching Slack message on deploy success/failure"
 author: "chetanbothra"
+
 branding:
   icon: "message-circle"
   color: "green"
@@ -26,12 +27,13 @@ runs:
         if [ "${{ job.status }}" == "success" ]; then
           COLOR="good"
           STATUS_TEXT=":tada: *Deployment Successful!*"
+          STATUS_PLAIN="Deployment Successful"
         else
           COLOR="danger"
           STATUS_TEXT=":x: *Deployment Failed!*"
+          STATUS_PLAIN="Deployment Failed"
         fi
 
-        # Extract useful URLs
         BRANCH_NAME="${{ github.ref_name }}"
         RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         REPO_URL="${{ github.server_url }}/${{ github.repository }}"
@@ -39,6 +41,7 @@ runs:
         cat <<EOF > slack_payload.json
         {
           "channel": "${{ inputs.slack_channel }}",
+          "text": "${STATUS_PLAIN} | Repo: ${{ github.repository }} | Env: ${{ inputs.environment }}",
           "attachments": [
             {
               "color": "$COLOR",
@@ -54,11 +57,26 @@ runs:
                 {
                   "type": "section",
                   "fields": [
-                    { "type": "mrkdwn", "text": "*Repository:*\\n<${REPO_URL}|${{ github.repository }}>" },
-                    { "type": "mrkdwn", "text": "*Branch:*\\n${BRANCH_NAME}" },
-                    { "type": "mrkdwn", "text": "*Author:*\\n${{ github.actor }}" },
-                    { "type": "mrkdwn", "text": "*Environment:*\\n${{ inputs.environment }}" },
-                    { "type": "mrkdwn", "text": "*Workflow:*\\n<${RUN_URL}|View Deployment Summary>" }
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\\n<${REPO_URL}|${{ github.repository }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\\n${BRANCH_NAME}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\\n${{ inputs.environment }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow:*\\n<${RUN_URL}|View Deployment Summary>"
+                    }
                   ]
                 }
               ]
